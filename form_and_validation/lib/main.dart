@@ -1,39 +1,41 @@
 import 'package:flutter/material.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+void main() => runApp(FormApp());
 
-  final String title;
-
+class FormApp extends StatelessWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Form Validation',
+      home: FormScreen(),
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final _formKey = GlobalKey<FormState>();
+class FormScreen extends StatefulWidget {
+  @override
+  _FormScreenState createState() => _FormScreenState();
+}
 
-  String? _selectedGender;
-  double _familyMembers = 5;
-  int _rating = 3;
+class _FormScreenState extends State<FormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  double _sliderValue = 5.0;
+  int _rating = 0;
   int _stepperValue = 10;
+  String? _selectedGender;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Flutter Form Validation"),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: Text('Flutter Form Validation')),
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
-              // Full Name
               TextFormField(
-                decoration: const InputDecoration(labelText: "Full Name"),
+                decoration: InputDecoration(labelText: 'Full Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'This field cannot be empty.';
@@ -41,10 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              // Date of Birth
               TextFormField(
-                decoration: const InputDecoration(labelText: "Date of Birth"),
+                decoration: InputDecoration(labelText: 'Date of Birth'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'This field cannot be empty.';
@@ -52,49 +52,50 @@ class _MyHomePageState extends State<MyHomePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              // Gender Dropdown
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: "Gender"),
+                decoration: InputDecoration(labelText: 'Select Gender'),
                 value: _selectedGender,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                },
                 items: ['Male', 'Female', 'Other']
                     .map((gender) => DropdownMenuItem(
                           value: gender,
                           child: Text(gender),
                         ))
                     .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedGender = value;
-                  });
-                },
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null) {
                     return 'This field cannot be empty.';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 32),
-              // Number of Family Members (Slider)
-              const Text("Number of Family Members"),
+              SizedBox(height: 20),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Age'),
+                keyboardType: TextInputType.number,
+              ),
+
+              SizedBox(height: 20),
+              Text('Number of Family Members'),
               Slider(
-                value: _familyMembers,
                 min: 0,
                 max: 10,
                 divisions: 10,
-                label: _familyMembers.toStringAsFixed(0),
-                activeColor: Colors.purple,
-                inactiveColor: Colors.purple[100],
+                value: _sliderValue,
+                label: _sliderValue.round().toString(),
                 onChanged: (value) {
                   setState(() {
-                    _familyMembers = value;
+                    _sliderValue = value;
                   });
                 },
               ),
-              const SizedBox(height: 16),
-              // Rating (buttons)
-              const Text("Rating"),
+
+              SizedBox(height: 20),
+              Text('Rating'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(5, (index) {
@@ -104,58 +105,49 @@ class _MyHomePageState extends State<MyHomePage> {
                         _rating = index + 1;
                       });
                     },
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: _rating == index + 1
-                            ? Colors.deepPurple
-                            : Colors.grey,
-                      ),
-                    ),
                     child: Text('${index + 1}'),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: _rating == index + 1
+                          ? Colors.purple.shade100
+                          : Colors.white,
+                    ),
                   );
                 }),
               ),
-              const SizedBox(height: 16),
-              // Stepper
-              const Text("Stepper"),
+              SizedBox(height: 20),
+              Text('Stepper'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.remove),
                     onPressed: () {
                       setState(() {
-                        _stepperValue--;
+                        if (_stepperValue > 0) _stepperValue--;
                       });
                     },
+                    icon: Icon(Icons.remove),
                   ),
-                  Text('$_stepperValue', style: const TextStyle(fontSize: 20)),
+                  Text('$_stepperValue'),
                   IconButton(
-                    icon: const Icon(Icons.add),
                     onPressed: () {
                       setState(() {
                         _stepperValue++;
                       });
                     },
+                    icon: Icon(Icons.add),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // Languages Known (for future expansion)
-              const Text("Languages you know"),
-              const SizedBox(height: 8),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
+                  if (_formKey.currentState?.validate() ?? false) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Form is valid!')),
+                      SnackBar(content: Text('Form is valid!')),
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                ),
-                child: const Text('Submit'),
+                child: Text('Submit'),
               ),
             ],
           ),
